@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+
+# Generated experiment outputs are recreated by the runner scripts.
+results/
+
+# Superseded prototypes retained only in the local project archive.
+DTA_CODE/
+simple_poset_test.jl
