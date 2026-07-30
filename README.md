@@ -18,7 +18,9 @@ dta/
 experiments/
   figure_instances.py            manuscript example specifications
   instances.py                   complete Nguyen benchmark specification
+  mtr_case.py                    Hong Kong MTR data and path construction
   run_canonical_examples.py      rerun and verify all example results
+  run_mtr_case.py                one-hour MTR SO and QUE experiment
   run_nguyen_comparison.py       reproduce published and computed flows
 figures/                         manuscript figure-generation scripts
 tests/test_dta.py                structural and numerical regressions
@@ -56,6 +58,34 @@ cost differs from the validated specifications. The runners write:
 Additional synthetic and mechanism experiments are available as
 `experiments/run_*.py`. The scripts in `figures/` write their outputs to
 `results/figures/`.
+
+## Hong Kong MTR case
+
+The real-data runner reads `mtr_data/tb_txn.csv`,
+`mtr_data/mtr_network_operation_assignment.csv`,
+`mtr_data/Timetable_Test1.csv`, and `mtr_data/tb_carrier.csv`. It selects
+tap-ins from 18:00 to 19:00, aggregates demand by OD and observed 15-minute
+tap-out interval, extends the timetable to 23:00, and limits each generated
+itinerary to five denied boardings. Vehicle capacity is
+`248 * carrier_car_no`. Timetable car counts are used only for extended
+horizon runs outside the temporal coverage of `tb_carrier.csv`.
+For each physical route, path generation also retains boundary realizations
+that attain the left-behind limit on each train leg.
+
+```bash
+python experiments/run_mtr_case.py \
+  --demand-start 64800 \
+  --demand-end 68400 \
+  --timetable-end 82800 \
+  --max-left-behind 5 \
+  --paths-per-route 50
+```
+
+The large case uses sparse HiGHS matrices for SO. QUE uses a compact
+precedence graph and a sequential capacity-loading shortcut. A full-demand
+result certifies the same lexicographic path flows as Algorithm 1 because
+every path is loaded to its remaining-demand or residual-capacity bound and
+the final assignment provides a feasible completion of every prefix.
 
 ## Implementation notes
 

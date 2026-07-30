@@ -20,13 +20,18 @@ from dta import (  # noqa: E402
     componentwise_quasi_ue_assignment,
     diagnostics,
     enumerate_paths,
+    greedy_lexicographic_assignment,
     quasi_ue_assignment,
+    que_order,
+    sparse_system_optimum_assignment,
     system_optimum_assignment,
 )
 from dta.priority_graph import (  # noqa: E402
     BOARDING_PRIORITY,
     COST_PRIORITY,
+    build_compact_priority_graph,
     build_priority_graph,
+    cost_compatible_projection_order,
     relation_types,
 )
 from figure_instances import (  # noqa: E402
@@ -347,6 +352,54 @@ def test_componentwise_que_matches_monolithic_que():
     report = diagnostics.diagnose(instance, pathset, componentwise)
     assert report.demand_conserved
     assert report.capacity_feasible
+
+
+def test_sparse_so_and_certified_greedy_loading_match_small_exact_solvers():
+    instance = priority_bottleneck_instance(
+        demand_per_group=10,
+        capacity=10,
+        high_priority_delay=5,
+        low_priority_delay=20,
+    )
+    pathset = enumerate_paths(instance)
+    dense_so = system_optimum_assignment(instance, pathset)
+    sparse_so = sparse_system_optimum_assignment(instance, pathset)
+    _, _, removed, order = que_order(instance, pathset)
+    exact_que = quasi_ue_assignment(instance, pathset)
+    greedy_que = greedy_lexicographic_assignment(
+        instance, pathset, order, removed_edges=removed
+    )
+
+    assert dense_so.feasible and sparse_so.feasible
+    assert abs(dense_so.total_cost - sparse_so.total_cost) <= TOL
+    assert exact_que.feasible and greedy_que.feasible
+    assert greedy_que.details["full_demand_certificate"]
+    for path in pathset.indices():
+        assert abs(exact_que.flow[path] - greedy_que.flow[path]) <= TOL
+
+
+def test_cost_compatible_projection_preserves_cost_priority_and_is_acyclic():
+    instance = nguyen_full_instance()
+    pathset = enumerate_paths(instance)
+    graph = build_compact_priority_graph(instance, pathset)
+    order, removed_count, _ = cost_compatible_projection_order(
+        graph, removed_sample_limit=1000
+    )
+    position = {path: rank for rank, path in enumerate(order)}
+
+    retained = nx.DiGraph()
+    retained.add_nodes_from(graph.nodes)
+    counted_removed = 0
+    for u, v in graph.edges:
+        relations = relation_types(graph, u, v)
+        if COST_PRIORITY in relations:
+            assert position[u] < position[v]
+        if position[u] < position[v]:
+            retained.add_edge(u, v)
+        elif BOARDING_PRIORITY in relations:
+            counted_removed += 1
+    assert counted_removed == removed_count
+    assert nx.is_directed_acyclic_graph(retained)
 
 
 def _run_all():

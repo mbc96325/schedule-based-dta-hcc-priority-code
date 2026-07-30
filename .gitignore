@@ -8,6 +8,9 @@ venv/
 # Generated experiment outputs are recreated by the runner scripts.
 results/
 
+# Raw operational and individual transaction data are not published.
+mtr_data/
+
 # Superseded prototypes retained only in the local project archive.
 DTA_CODE/
 simple_poset_test.jl
