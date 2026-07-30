@@ -43,6 +43,14 @@ from .large_scale import (
     greedy_lexicographic_assignment,
     sparse_system_optimum_assignment,
 )
+from .nguyen_penalty import (
+    build_nguyen_penalty_index,
+    evaluate_nguyen_cost,
+    nguyen_penalty_equilibrium,
+    nguyen_penalty_equilibrium_sd,
+    NguyenPenaltyIndex,
+    NguyenPenaltyResult,
+)
 
 __all__ = [
     "TransitInstance",
@@ -70,6 +78,12 @@ __all__ = [
     "compact_quasi_ue_assignment",
     "greedy_lexicographic_assignment",
     "sparse_system_optimum_assignment",
+    "build_nguyen_penalty_index",
+    "evaluate_nguyen_cost",
+    "nguyen_penalty_equilibrium",
+    "nguyen_penalty_equilibrium_sd",
+    "NguyenPenaltyIndex",
+    "NguyenPenaltyResult",
     "diagnostics",
     "io",
 ]

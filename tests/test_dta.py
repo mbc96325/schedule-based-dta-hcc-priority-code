@@ -20,7 +20,10 @@ from dta import (  # noqa: E402
     componentwise_quasi_ue_assignment,
     diagnostics,
     enumerate_paths,
+    build_nguyen_penalty_index,
     greedy_lexicographic_assignment,
+    nguyen_penalty_equilibrium,
+    nguyen_penalty_equilibrium_sd,
     quasi_ue_assignment,
     que_order,
     sparse_system_optimum_assignment,
@@ -285,6 +288,49 @@ def test_complete_nguyen_published_and_recomputed_assignments():
     assert diagnostics.diagnose(
         instance, pathset, que
     ).no_improving_switch
+
+
+def test_nguyen_penalty_solver_reproduces_published_epsilon_equilibrium():
+    instance = nguyen_full_instance()
+    pathset = enumerate_paths(instance)
+    index = build_nguyen_penalty_index(instance, pathset)
+    result = nguyen_penalty_equilibrium(
+        index,
+        max_iterations=20000,
+        tolerance=1e-5,
+        minimum_iterations=100,
+        report_every=1000,
+    )
+    expected = instance.metadata["published_penalty_equilibrium_flow"]
+    for position, path_id in enumerate(index.path_ids):
+        label = pathset.label[int(path_id)]
+        assert abs(result.flow[position] - expected[label]) <= 0.08, (
+            label,
+            result.flow[position],
+            expected[label],
+        )
+    assert result.relative_gap <= 2e-4
+
+
+def test_nguyen_simplicial_decomposition_reproduces_epsilon_equilibrium():
+    instance = nguyen_full_instance()
+    pathset = enumerate_paths(instance)
+    index = build_nguyen_penalty_index(instance, pathset)
+    result = nguyen_penalty_equilibrium_sd(
+        index,
+        max_columns=20,
+        master_iterations=200,
+        tolerance=1e-5,
+    )
+    expected = instance.metadata["published_penalty_equilibrium_flow"]
+    for position, path_id in enumerate(index.path_ids):
+        label = pathset.label[int(path_id)]
+        assert abs(result.flow[position] - expected[label]) <= 0.08, (
+            label,
+            result.flow[position],
+            expected[label],
+        )
+    assert result.relative_gap <= 2e-4
 
 
 def test_que_need_not_be_an_original_ue_when_original_ue_exists():

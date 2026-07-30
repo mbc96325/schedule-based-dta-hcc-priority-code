@@ -133,6 +133,17 @@ def nguyen_full_instance() -> TransitInstance:
                 "p8": 5,
                 "p9": 5,
             },
+            "published_penalty_equilibrium_flow": {
+                "p1": 5.236,
+                "p2": 0,
+                "p3": 4.764,
+                "p4": 10,
+                "p5": 0,
+                "p6": 0,
+                "p7": 10,
+                "p8": 6.236,
+                "p9": 3.764,
+            },
             "published_system_optimum_flow": {
                 "p1": 0,
                 "p2": 10,

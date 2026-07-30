@@ -21,6 +21,7 @@ experiments/
   mtr_case.py                    Hong Kong MTR data and path construction
   run_canonical_examples.py      rerun and verify all example results
   run_mtr_case.py                one-hour MTR SO and QUE experiment
+  run_mtr_nguyen.py              Nguyen penalty equilibrium for the MTR case
   run_nguyen_comparison.py       reproduce published and computed flows
 figures/                         manuscript figure-generation scripts
 tests/test_dta.py                structural and numerical regressions
@@ -86,6 +87,23 @@ precedence graph and a sequential capacity-loading shortcut. A full-demand
 result certifies the same lexicographic path flows as Algorithm 1 because
 every path is loaded to its remaining-demand or residual-capacity bound and
 the final assignment provides a feasible completion of every prefix.
+
+The Nguyen et al. boarding-penalty equilibrium can be approximated on the same
+path set with:
+
+```bash
+python experiments/run_mtr_nguyen.py
+```
+
+This asymmetric variational-inequality model penalizes overloaded boarding
+events but does not impose vehicle capacity as a hard constraint. Its output
+therefore reports the VI gap and all train-segment capacity violations
+separately from the hard-capacity SO and QUE results. The default large-scale
+solver uses 10,000 successive-averages iterations with step exponent 0.6,
+followed by a 5,000-iteration warm-started refinement. The optional restricted
+simplicial-decomposition solver follows the column-generation structure
+proposed in the source article, but its nonconvex master problem is not
+convergence certified.
 
 ## Implementation notes
 
